@@ -12,7 +12,7 @@ This repository provides an optimized way to update Colloid icon colors dynamica
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/colloid-noctalia-updater.git
+   git clone https://github.com/Grizz96/colloid-noctalia-updater.git
    cd colloid-noctalia-updater
    ```
 
