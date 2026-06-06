@@ -21,20 +21,31 @@ This repository provides an optimized way to update Colloid icon colors dynamica
    chmod +x install.sh
    ./install.sh
    ```
-   *The installer will download the base Colloid icons and set up the necessary configurations.*
+
+### What does `install.sh` do?
+- **Dependency Check**: Ensures `curl`, `git`, `perl`, and `gsettings` are installed.
+- **Smart Base Theme Setup**: 
+  - Checks if `Noctalia-Colloid-Dark` is already installed in `~/.icons`.
+  - If not found, it downloads and runs the base installer from [noctalia-dynamic-icons](https://github.com/ezequielgk/noctalia-dynamic-icons).
+- **Dual-Theme Strategy (The "Ping-Pong"):** 
+  - The installer **copies** the base theme to create a second variant: `Noctalia-Colloid-Dark-2`.
+  - **Why two themes?** GNOME and other desktop environments often cache icons. By switching back and forth between two identical themes (Theme 1 ↔ Theme 2), we force the system to refresh all icons instantly whenever the colors are updated.
+- **Script Deployment**: Installs the `update-colloid.sh` script to `~/.config/noctalia/`.
 
 ## Usage
 
 To automatically update your icon colors when the wallpaper changes, add the following line to your wallpaper change script/hook:
 
 ```bash
-sleep 0.5 && /bin/bash ~/.config/noctalia/update_colloid_colors.sh
+sleep 0.5 && /bin/bash ~/.config/noctalia/update-colloid.sh
 ```
+
+> **Note**: The `sleep 0.5` delay ensures that your system has finished writing the new Noctalia color files before this script starts. If you have a powerful machine, you can try reducing this (e.g., `0.2`), or increase it if the colors don't update consistently.
 
 ### Manual Update
 You can also run the update script manually at any time:
 ```bash
-~/.config/noctalia/update_colloid_colors.sh
+~/.config/noctalia/update-colloid.sh
 ```
 
 ## Requirements
@@ -45,4 +56,4 @@ You can also run the update script manually at any time:
 
 ## Credits
 - Based on the [Colloid Icon Theme](https://github.com/vinceliuice/Colloid-icon-theme).
-- Inspired by the [Noctalia Dynamic Icons](https://github.com/ezequielgk/noctalia-dynamic-icons) project.
+- Icons are downloaded from the [Noctalia Dynamic Icons](https://github.com/ezequielgk/noctalia-dynamic-icons) project.

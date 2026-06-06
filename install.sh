@@ -31,22 +31,26 @@ done
 
 # 2. Download and run the base Colloid Noctalia installer
 # Using a temp file instead of psub for bash compatibility
-info "Downloading base Colloid Noctalia theme..."
-TMP_SCRIPT=$(mktemp)
-curl -fsSL https://raw.githubusercontent.com/ezequielgk/noctalia-dynamic-icons/main/colloid.sh -o "$TMP_SCRIPT"
-chmod +x "$TMP_SCRIPT"
+if [ ! -d "$THEME1_PATH" ]; then
+    info "Downloading base Colloid Noctalia theme..."
+    TMP_SCRIPT=$(mktemp)
+    curl -fsSL https://raw.githubusercontent.com/ezequielgk/noctalia-dynamic-icons/main/colloid.sh -o "$TMP_SCRIPT"
+    chmod +x "$TMP_SCRIPT"
 
-info "Running Colloid Noctalia installer (Please select option 1 if prompted)..."
-# We run it in a way that allows user interaction
-bash "$TMP_SCRIPT"
-rm "$TMP_SCRIPT"
+    info "Running Colloid Noctalia installer (Please select option 1 if prompted)..."
+    # We run it in a way that allows user interaction
+    bash "$TMP_SCRIPT"
+    rm "$TMP_SCRIPT"
+else
+    success "Base theme already installed at $THEME1_PATH, skipping download."
+fi
 
 # 3. Create the second theme variant for ping-pong switching
 if [ -d "$THEME1_PATH" ]; then
     info "Creating theme variant for faster switching..."
     rm -rf "$THEME2_PATH"
     cp -r "$THEME1_PATH" "$THEME2_PATH"
-    
+
     # Update the name in index.theme for the second variant
     sed -i 's/Name=Noctalia-Colloid-Dark/Name=Noctalia-Colloid-Dark-2/' "$THEME2_PATH/index.theme"
     success "Created $THEME2_PATH"
@@ -57,12 +61,12 @@ fi
 # 4. Install the update script
 info "Installing update script to $CONFIG_DIR..."
 mkdir -p "$CONFIG_DIR"
-cp "$REPO_DIR/update_colloid_colors.sh" "$CONFIG_DIR/update_colloid_colors.sh"
-chmod +x "$CONFIG_DIR/update_colloid_colors.sh"
+cp "$REPO_DIR/update-colloid.sh" "$CONFIG_DIR/update-colloid.sh"
+chmod +x "$CONFIG_DIR/update-colloid.sh"
 success "Update script installed."
 
 # 5. Instructions
 echo -e "\n${BLUE}=== INSTALLATION COMPLETE ===${NC}"
 echo -e "To automate color updates, add the following to your wallpaper change hook:"
-echo -e "${GREEN}sleep 0.5 && /bin/bash $CONFIG_DIR/update_colloid_colors.sh${NC}"
+echo -e "${GREEN}sleep 0.5 && /bin/bash $CONFIG_DIR/update-colloid.sh${NC}"
 echo -e "\nNote: This script switches between two theme versions to ensure instant icon refresh."

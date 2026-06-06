@@ -48,36 +48,47 @@ NEW_HEX=$(printf "#%02x%02x%02x" "$R" "$G" "$B")
 
 # ── 3. Early-exit if current theme already matches ───────────────────────────
 if [[ -n "$CURRENT_PATH" ]]; then
-    # Try to find a folder icon to check the current color
     SAMPLE_SVG_CURRENT="$CURRENT_PATH/places/scalable/folder.svg"
     if [[ -f "$SAMPLE_SVG_CURRENT" ]]; then
-        CURRENT_HEX=$(sed -n 's/.*color:\(#[0-9a-fA-F]\{6\}\).*/\1/p' "$SAMPLE_SVG_CURRENT" | head -1)
-        if [[ "$CURRENT_HEX" == "$NEW_HEX" ]]; then
+        # Check if ALL colors in current theme match NEW_HEX
+        MISMATCH=$(grep -oP "color:\K#[0-9a-fA-F]{6}" "$SAMPLE_SVG_CURRENT" | grep -vi "$NEW_HEX" || true)
+        if [[ -z "$MISMATCH" ]]; then
             echo "Already up to date: $CURRENT_NAME ($NEW_HEX)"
             exit 0
         fi
     fi
 fi
 
-# ── 4. Detect OLD_HEX in target ──────────────────────────────────────────────
+# ── 4. Detect OLD_COLORS in target ──────────────────────────────────────────
 [[ ! -d "$TARGET_PATH" ]] && { echo "Error: $TARGET_PATH not found"; exit 1; }
 
 SAMPLE_SVG="$TARGET_PATH/places/scalable/folder.svg"
 [[ ! -f "$SAMPLE_SVG" ]] && { echo "Error: $SAMPLE_SVG not found"; exit 1; }
 
-OLD_HEX=$(sed -n 's/.*color:\(#[0-9a-fA-F]\{6\}\).*/\1/p' "$SAMPLE_SVG" | head -1)
-[[ -z "$OLD_HEX" ]] && { echo "Error: Could not detect color in $TARGET_PATH"; exit 1; }
+# Get all unique hex colors from the style block
+OLD_COLORS=$(grep -oP "color:\K#[0-9a-fA-F]{6}" "$SAMPLE_SVG" | sort -u)
+
+if [[ -z "$OLD_COLORS" ]]; then
+    echo "Error: Could not detect any colors in $TARGET_PATH"
+    exit 1
+fi
 
 # ── 5. Replace colors in target theme ────────────────────────────────────────
-if [[ "$OLD_HEX" != "$NEW_HEX" ]]; then
-    echo "Updating $TARGET_NAME: $OLD_HEX → $NEW_HEX"
+PERL_EXPR=""
+for OLD_HEX in $OLD_COLORS; do
+    if [[ "$OLD_HEX" != "$NEW_HEX" ]]; then
+        echo "Updating $TARGET_NAME: $OLD_HEX → $NEW_HEX"
+        PERL_EXPR+="s/\Q${OLD_HEX}\E/${NEW_HEX}/gi; "
+    fi
+done
 
+if [[ -n "$PERL_EXPR" ]]; then
     NPROC=$(nproc)
+    # Search for any of the old colors to build the file list
+    SEARCH_PATTERN=$(echo "$OLD_COLORS" | paste -sd '|' -)
 
-    # Use LC_ALL=C for performance, search and replace in target path
-    LC_ALL=C grep -rlF "$OLD_HEX" "$TARGET_PATH/places" \
-        | xargs -P "$NPROC" -I{} perl -pi \
-            -e "s/\Q${OLD_HEX}\E/${NEW_HEX}/gi" {}
+    LC_ALL=C grep -rlE "$SEARCH_PATTERN" "$TARGET_PATH/places" \
+        | xargs -P "$NPROC" -I{} perl -pi -e "$PERL_EXPR" {}
 
     # Rebuild icon cache in background
     {
