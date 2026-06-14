@@ -50,6 +50,14 @@ You can also run the update script manually at any time:
 ~/.config/noctalia/update-colloid.sh
 ```
 
+## Uninstallation
+
+To remove the updater and its components:
+```bash
+chmod +x uninstall.sh
+./uninstall.sh
+```
+
 ## Requirements
 - `curl`, `git`, `unzip`
 - `perl` (for fast text replacement)
