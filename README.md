@@ -2,7 +2,12 @@
 
 This repository provides an optimized way to update Colloid icon colors dynamically based on your Noctalia color scheme. It uses a "ping-pong" technique (switching between two identical theme variants) to force GTK applications to refresh their icons instantly without glitches.
 
-[Watch the demonstration](show.mp4)
+Watch the demonstration
+
+
+https://github.com/user-attachments/assets/54a20c64-a2a7-4028-a0dc-985657ed3149
+
+
 
 ## Features
 - **Fast Updates**: Uses `perl` and `grep` for high-performance SVG color replacement.
